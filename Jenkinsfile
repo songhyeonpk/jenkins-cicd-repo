@@ -1,6 +1,14 @@
 pipeline {
     agent any
 
+    options {
+        timeout(time: 5, unit: 'MINUTES')   // timeout 5분 설정
+    }
+
+    environment {
+        GRADLE_USER_HOME = "${WORKSPACE}/.gradle"   // Gradle 캐시 설정
+    }
+
     stages {
         stage('build') {
             steps {
