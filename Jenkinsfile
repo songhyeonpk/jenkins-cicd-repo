@@ -10,24 +10,63 @@ pipeline {
     }
 
     stages {
-        stage('build') {
+        // 환경 변수 준비
+        stage('Prepare Environment') {
             steps {
-                // Gradle Build
-                sh './gradlew clean build'
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        env.DOCKER_USERNAME = "${DOCKER_USERNAME}"
+                        env.DOCKER_PASSWORD = "${DOCKER_PASSWORD}"
+                        env.DOCKER_IMAGE = "${DOCKER_USERNAME}/jenkins-test:latest"
+                    }
+                }
             }
         }
 
-        stage('test') {
+        // Gradle 빌드
+        stage('Build') {
+            steps {
+                // Gradle Build
+                sh './gradlew clean build -x test'
+            }
+        }
+
+        // 테스트 실행
+        stage('Test') {
             steps {
                 // 테스트 실행
                 sh './gradlew test'
             }
         }
 
-        stage('package') {
+        // JAR 파일 패키징
+        stage('Package') {
             steps {
                 // JAR 파일 생성 확인
                 sh 'ls build/libs/*.jar'
+            }
+        }
+
+        // 도커 이미지 빌드
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    sh """
+                    docker build -t "${DOCKER_IMAGE}" .
+                    """
+                }
+            }
+        }
+
+        // 도커 로그인 & 도커 이미지 push
+        stage('Docker Login & Push Docker Image') {
+            steps {
+                script {
+                    sh """
+                    echo "\${DOCKER_PASSWORD}" | docker login -u "\${DOCKER_USERNAME}" --password-stdin
+                    docker push "${DOCKER_IMAGE}"
+                    """
+                }
             }
         }
     }
