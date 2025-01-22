@@ -78,19 +78,13 @@ pipeline {
                             string(credentialsId: 'ec2-user', variable: 'EC2_USER'),
                             string(credentialsId: 'ec2-host', variable: 'EC2_HOST')]) {
                         sshagent(['ssh-credentials']) {
-                            def dockerContainerName = "test-server-container"
+                            def DOCKER_CONTAINER_NAME = "test-server-container"
 
                             sh"""
                             # SSH EC2 연결
                             ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << EOF
                                 set -e
                                 echo "Connected to EC2"
-                                
-                                # 배포환경 환경변수 정의
-                                export DOCKERHUB_ACCESS_TOKEN="$DOCKER_PASSWORD"
-                                export DOCKERHUB_USERNAME="$DOCKER_USERNAME"
-                                export DOCKER_IMAGE="$DOCKER_IMAGE"
-                                export DOCKER_CONTAINER_NAME="$dockerContainerName"
                                 
                                 # 도커 로그인
                                 echo "\$DOCKERHUB_ACCESS_TOKEN | docker login -u "\$DOCKERHUB_USERNAME --password-stdin
