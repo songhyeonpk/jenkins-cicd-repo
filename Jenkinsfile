@@ -87,7 +87,7 @@ pipeline {
                                 echo "Connected to EC2"
                                 
                                 # 배포환경 환경변수 정의
-                                export DOCKERHUB_ACCESS_TOKEN="$DOCKER_ACCESS_TOKEN"
+                                export DOCKERHUB_ACCESS_TOKEN="$DOCKER_PASSWORD"
                                 export DOCKERHUB_USERNAME="$DOCKER_USERNAME"
                                 export DOCKER_IMAGE="$DOCKER_IMAGE"
                                 export DOCKER_CONTAINER_NAME="$dockerContainerName"
