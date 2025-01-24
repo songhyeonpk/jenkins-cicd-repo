@@ -121,7 +121,7 @@ pipeline {
     post {
         always {
             // 빌드 후 로그 정리 및 결과 아카이빙
-            archiveArtifacts artifacts: 'build/libs/*.jar', fingerprint: true
+            // archiveArtifacts artifacts: 'build/libs/*.jar', fingerprint: true
 
             // 슬랙 알림 전송
             echo 'Send slack alert.'
