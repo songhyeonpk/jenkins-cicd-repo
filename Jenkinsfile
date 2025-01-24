@@ -54,7 +54,7 @@ pipeline {
                         echo \$DOCKERHUB_ACCESS_TOKEN | docker login -u \$DOCKERHUB_USERNAME --password-stdin
 
                         # 도커 이미지 빌드
-                        docker image -t $dockerImage .
+                        docker build -t $dockerImage .
 
                         # 도커 이미지 push
                         docker push $dockerImage
