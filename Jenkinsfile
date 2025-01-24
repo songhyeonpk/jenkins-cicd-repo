@@ -85,9 +85,16 @@ pipeline {
                         def dockerImage = "${DOCKERHUB_USERNAME}/${env.DOCKER_IMAGE}"
                         // 도커 컨테이너
                         def dockerContainerName = "test-server-container"
+                        // EC2 docker-compose.yml 복사 경로
+                        def ec2DockerComposeCopyPath = "/home/${EC2_USER}"
 
                         // SSH EC2 연결
                         sshagent(['ssh-credentials']) {
+                            // docker-compose.yml EC2 배포환경으로 복사
+                            sh """
+                            scp -o StrictHostKeyChecking=no docker-compose.yml $EC2_USER@$EC2_HOST:${ec2DockerComposeCopyPath}/
+                            """
+
                             sh """
                             ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << EOF
                                 set -e
@@ -96,15 +103,11 @@ pipeline {
                                 # 배포환경 도커 로그인
                                 echo \$DOCKERHUB_ACCESS_TOKEN | docker login -u \$DOCKERHUB_USERNAME --password-stdin
                                 
-                                # 도커 이미지 pull
-                                docker pull $dockerImage
+                                # 도커 컴포즈 pull (docker-compose.yml)
+                                docker-compose pull
 
-                                # 기존 도커 컨테이너 중지 및 삭제
-                                docker stop $dockerContainerName 2>/dev/null || true
-                                docker rm $dockerContainerName 2>/dev/null || true
-
-                                # 도커 컨테이너 실행
-                                docker run -d --name $dockerContainerName -p 8080:8080 $dockerImage
+                                # 도커 컴포즈 up
+                                docker-compose up -d
 
                                 # 사용하지 않는 도커 이미지 모두 삭제
                                 docker image prune -a -f
